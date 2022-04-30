@@ -1,6 +1,10 @@
 const express = require("express");
+var cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Hello bk!");
@@ -57,7 +61,17 @@ const users = [
 // });
 
 app.get("/users", (req, res) => {
-  res.send(users);
+  // console.log("query ",req.query)
+  //filter by search query parameter
+  if (req.query.name) {
+    const search = req.query.name.toLocaleLowerCase();
+    const matched = users.filter((user) =>
+      user.name.toLocaleLowerCase().includes(search)
+    );
+    res.send(matched);
+  } else {
+    res.send(users);
+  }
 });
 
 app.get("/user/:id", (req, res) => {
@@ -70,6 +84,21 @@ app.get("/user/:id", (req, res) => {
   const user = users.find((u) => u.id == id); //for 2 equal it's work. for triple equal must convert id into intger
   res.send(user);
 });
+
+app.post("/user", (req, res) => {
+  console.log("request ", req.body);
+  const user = req.body;
+  user.id = users.length + 1;
+  users.push(user);
+  res.send(user);
+});
+
+// app.get("/fruits",(req, res)=>{
+//   res.send(['mango','apple','orange']);
+// })
+// app.get("/fruits/mango/fazle",(req, res)=>{
+//   res.send("mango fazle");
+// })
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
